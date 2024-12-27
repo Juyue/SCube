@@ -1,29 +1,37 @@
 name: scube
 channels:
   - pyg
-  - nvidia/label/cuda-12.1.0
+  - nvidia
   - pytorch
   - conda-forge
   - pytorch3d
 dependencies:
   - python=3.10 
-  - pytorch=2.2.0 
-  - torchvision=0.17.0
-  - pytorch-cuda=12.1
-  - numpy<2.0.0
+  - jupyterlab
+  - pytorch::pytorch=2.4.0
+  - pytorch::pytorch-cuda=12.1
+  - pytorch::pytorch-mutex=*=cuda
+  - pytorch::torchvision
   - tensorboard
+  - numpy<2.0.0
   - pip
   - git
   - gitpython
   - ca-certificates
   - certifi
   - openssl
-  - cuda
-  - cuda-nvcc
+  - cuda-toolkit=12.1
+  - cuda-compiler=12.1
+  - cuda-nvcc=12.1
+  - cuda-cccl=12.1
+  - cuda-libraries-static=12.1
+  - cuda-cudart-static=12.1
+  - libcurand-dev
   - parameterized
   - gcc_linux-64=11
   - gxx_linux-64=11
-  - setuptools
+  - setuptools>=68.2.2
+  - clang-format=18
   - cmake
   - make
   - ninja
@@ -32,7 +40,7 @@ dependencies:
   - tqdm
   - pyg
   - sparsehash
-  - pytorch-scatter
+  - pyg::pytorch-scatter=2.1.2
   - sphinx>=7.0.0
   - sphinx_rtd_theme
   - myst-parser
@@ -47,6 +55,14 @@ dependencies:
   - pytorch3d
   - ffmpeg
   - linkify-it-py
+  ## 3dgs
+  - imageio
+  - torchmetrics
+  - py-opencv
+  - tyro
+  - pillow
+  - pyyaml
+  - scikit-learn
   - pip:
     - -f https://pycg.huangjh.tech/packages/index.html
     - python-pycg
@@ -78,3 +94,6 @@ dependencies:
     - opencv_python_headless
     - openmim
     - timm
+    # copy from openvdb/fvdb
+    - https://nksr.s3.ap-northeast-1.amazonaws.com/dev-whls/pt24cu121/torchsparse_20-2.0.0b0-cp310-cp310-linux_x86_64.whl
+    - https://nksr.s3.ap-northeast-1.amazonaws.com/dev-whls/pt24cu121/torchsparse-2.1.0-cp310-cp310-linux_x86_64.whl
