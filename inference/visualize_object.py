@@ -32,6 +32,7 @@ coarse_normal_color = coarse_normal * 0.5 + 0.5
 
 pc = ps.register_point_cloud(f"Coarse Point", coarse_xyz)
 pc.add_color_quantity("normal", coarse_normal_color, enabled=True)
+ps.screenshot(f"outputs/plane_coarse_pointcloud_{args.id}.png")
 
 # fine stage
 fine_xyz = result_dict["fine_xyz"]
@@ -41,6 +42,7 @@ fine_normal = fine_normal / (np.linalg.norm(fine_normal, axis=1, keepdims=True) 
 pc = ps.register_point_cloud(f"Fine Point", fine_xyz)
 fine_normal_color = fine_normal * 0.5 + 0.5
 pc.add_color_quantity("normal", fine_normal_color, enabled=True)
+ps.screenshot(f"outputs/plane_fine_pointcloud_{args.id}.png")
 
 # Mesh
 mesh = trimesh.load(os.path.join(args.path, f"mesh/mesh_{args.id}.obj"))
@@ -48,4 +50,5 @@ mesh_n = pcu.estimate_mesh_vertex_normals(mesh.vertices, mesh.faces)
 mesh_c = (mesh_n + 1) / 2
 
 ps.register_surface_mesh(f"NKSR", mesh.vertices, mesh.faces).add_color_quantity("normal", mesh_c, enabled=True) 
-ps.show()
+# ps.show()
+ps.screenshot(f"outputs/plane_mesh_{args.id}.png")

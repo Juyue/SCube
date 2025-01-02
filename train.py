@@ -144,6 +144,12 @@ def readable_name_from_exec(exec_list: List[str]):
 
 
 if __name__ == '__main__':
+    import debugpy
+    debugpy.listen(5700)
+    print("Waiting for client...")
+    debugpy.wait_for_client()
+    print("Client connected!")
+
     """""""""""""""""""""""""""""""""""""""""""""""
     [1] Parse and initialize program arguments
         these include: --debug, --profile, --gpus, --num_nodes, --resume, ...
@@ -375,6 +381,8 @@ if __name__ == '__main__':
         global_step_offset = checkpoint["global_step"]
         trainer.fit_loop.epoch_loop._batches_that_stepped = global_step_offset
         del checkpoint    
+    
+    print(f"Loading model {model_args.model}")
 
     net_module = importlib.import_module("scube.models." + model_args.model).Model
     net_model = net_module(model_args)

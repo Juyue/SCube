@@ -18,6 +18,7 @@ from fvdb import JaggedTensor
 from loguru import logger
 from torch.autograd import Variable
 from scube.utils.point_util import uniform_point_sampling
+fvdb.nn.SparseConv3d.allow_tf32 = False
 
 def reparametrize(mu, logvar):
     std = logvar.div(2).exp()

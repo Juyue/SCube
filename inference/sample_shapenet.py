@@ -23,6 +23,7 @@ import trimesh
 
 from scube.utils.vis_util import random_seed
 from scube.utils import exp
+import fvdb
 
 
 def get_default_parser():
@@ -33,7 +34,7 @@ def get_default_parser():
 def create_model_from_args(config_path, ckpt_path, strict=True):
     model_yaml_path = Path(config_path)
     model_args = exp.parse_config_yaml(model_yaml_path)
-    net_module = importlib.import_module("xcube.models." + model_args.model).Model
+    net_module = importlib.import_module("scube.models." + model_args.model).Model
     args_ckpt = Path(ckpt_path)
     assert args_ckpt.exists(), "Selected checkpoint does not exist!"
     net_model = net_module.load_from_checkpoint(args_ckpt, hparams=model_args, strict=strict)

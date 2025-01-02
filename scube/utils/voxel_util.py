@@ -1,4 +1,3 @@
-import time
 
 import fvdb
 import numpy as np

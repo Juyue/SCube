@@ -1,0 +1,21 @@
+_fvdb_example_data_path: "/root/datasets/fvdb_example_data/xcube"
+
+train_dataset: FVDBExampleDataDataset
+train_val_num_workers: 4
+train_kwargs:
+  onet_base_path: ${_fvdb_example_data_path}
+  resolution: ${resolution}
+  random_seed: "fixed"
+
+val_dataset: FVDBExampleDataDataset
+val_kwargs:
+  onet_base_path: ${_fvdb_example_data_path}
+  resolution: ${resolution}
+  random_seed: "fixed"
+
+test_dataset: FVDBExampleDataDataset
+test_num_workers: 1
+test_kwargs:
+  onet_base_path: ${_fvdb_example_data_path}
+  resolution: ${resolution}
+  random_seed: "fixed"

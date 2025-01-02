@@ -1,0 +1,5 @@
+include_configs:
+  - ../train/vae/vae_128x128x128_sparse.yaml
+  - data.yaml
+
+name: 'fvdb_example_data/VAE_sparse'

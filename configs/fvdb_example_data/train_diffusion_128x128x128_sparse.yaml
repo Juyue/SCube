@@ -1,0 +1,16 @@
+include_configs:
+  - ../train/diffusion/diffusion_128x128x128_sparse.yaml
+  - data.yaml
+
+name: 'fvdb_example_data/diffusion_sparse'
+
+# normal concat cond
+use_normal_concat_cond: true
+num_classes: 3 # normal dim 3
+conditioning_key: "concat" # "none", "adm", "concat"
+
+use_pos_embed_world: false
+use_pos_embed: true
+
+vae_config: "configs/fvdb_example_data/train_vae_128x128x128_sparse.yaml"
+vae_checkpoint: "checkpoints/fvdb_example_data/fine_vae/last.ckpt"

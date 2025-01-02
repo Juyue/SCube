@@ -221,8 +221,7 @@ class Model(BaseModel):
             self.pos_embedder = embed_fn
             num_input_channels += input_ch
 
-
-        logger.info(f"num_input_channels: {num_input_channels}, out_channels: {out_channels}, \
+        logger.info(f"\nnum_input_channels: {num_input_channels}, out_channels: {out_channels}, \
                     \n num_classes: {num_classes}, context_dim: {context_dim}, concat_dim: {concat_dim} \
                     \n conditioning_key: {self.hparams.conditioning_key}")
         self.unet = eval(self.hparams.network.diffuser_name)(num_input_channels=num_input_channels, 
@@ -603,6 +602,8 @@ class Model(BaseModel):
             else:
                 concat_normal = cond_dict['normal']
             concat_normal.jdata /= (concat_normal.jdata.norm(dim=1, keepdim=True) + 1e-6) # avoid nan
+            # concat normal needs to be VDBTensor
+            concat_normal = VDBTensor(noisy_latents.grid, concat_normal)
             if not is_testing and self.hparams.use_classifier_free:
                 concat_normal = self.conduct_classifier_free(concat_normal, noisy_latents.grid.grid_count, noisy_latents.grid.device)            
             concat_list.append(concat_normal)
@@ -1021,7 +1022,7 @@ class Model(BaseModel):
                 # use dense diffusion
                 # create a dense grid
                 assert batch_size is not None, "batch_size should be provided"
-                grids = create_dense_latents(batch_size, h_stride)
+                grids = self.create_dense_latents(batch_size, h_stride)
                 
         # parse the cond_dict
         if cond_dict is None:
