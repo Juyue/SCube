@@ -115,7 +115,7 @@ class Model(BaseModel):
         if not self.hparams.use_hash_tree:
             hash_tree = None
                 
-        unet_feat = self.encoder(input_grid, batch)
+        unet_feat = self.encoder(input_grid, batch) # (N, 3+3) -> (N, 3*(1 + 5*2) + 3) -> (N, 32)
         unet_feat = fvnn.VDBTensor(input_grid, input_grid.jagged_like(unet_feat))
         unet_res, unet_output, dist_features = self.unet(batch, unet_feat, hash_tree)
 

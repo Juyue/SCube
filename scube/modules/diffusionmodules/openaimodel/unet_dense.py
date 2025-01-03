@@ -209,10 +209,12 @@ class ResBlock(TimestepBlock):
         if self.out_channels == channels:
             self.skip_connection = nn.Identity()
         elif use_conv:
+            # kernel size is 3
             self.skip_connection = conv_nd(
                 dims, channels, self.out_channels, 3, padding=1
             )
         else:
+            # kernel size is 1
             self.skip_connection = conv_nd(dims, channels, self.out_channels, 1)
 
     def forward(self, x, emb):
@@ -228,6 +230,8 @@ class ResBlock(TimestepBlock):
 
 
     def _forward(self, x, emb):
+        # up/down sample is between GroupNorm+SiLu and Conv3d
+        # GroupNorm+SiLu -> UpDownsample -> Conv3d
         if self.updown:
             in_rest, in_conv = self.in_layers[:-1], self.in_layers[-1]
             h = in_rest(x)
@@ -657,8 +661,8 @@ class UNetModel(nn.Module):
         hs = []
         if timesteps.dim() == 0:
             timesteps = timesteps.expand(1).to(x.device)
-        t_emb = timestep_embedding(timesteps, self.model_channels, repeat_only=False)
-        emb = self.time_embed(t_emb)
+        t_emb = timestep_embedding(timesteps, self.model_channels, repeat_only=False) # t_emb: [N, model_channels]
+        emb = self.time_embed(t_emb) # emb: [N, model_channels * 4]
 
         if self.num_classes is not None:
             emb = emb + self.label_emb(y)

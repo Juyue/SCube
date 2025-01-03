@@ -453,7 +453,7 @@ class StructPredictionNet(nn.Module):
                 device="cpu",
                 voxel_sizes=voxel_size,
                 origins=origins).to(x.device)
-
+            # before: x.data.jdata: (N, 512); after: x.data.jdata: (16x16x16, 512).inactive voxels are set to 0.0.
             x = fvnn.VDBTensor(neck_grid, neck_grid.fill_from_grid(x.data, x.grid, 0.0))
         elif self.neck_dense_type == "HAND_CRAFTED_POSED":
             # This is a specical case for waymo_wds dataset, where the dense grid is not centered
@@ -475,10 +475,10 @@ class StructPredictionNet(nn.Module):
         else:
             raise NotImplementedError
 
-        for module in self.pre_kl_bottleneck:
+        for module in self.pre_kl_bottleneck: # 512 -> 512; 512 -> 64
             x, _ = module(x)
         dec_main_feature = x.data.jdata
-        mu, log_sigma = torch.chunk(dec_main_feature, 2, dim=1)
+        mu, log_sigma = torch.chunk(dec_main_feature, 2, dim=1) # 64 -> [32, 32]
 
         return res, x, mu, log_sigma
     
@@ -497,7 +497,7 @@ class StructPredictionNet(nn.Module):
         for block, upsampler, struct_conv in zip(
                 [None] + list(self.decoders), [None] + list(self.upsamplers), self.struct_convs):  
             if block is not None:
-                x = upsampler(x, struct_decision)
+                x = upsampler(x, struct_decision) # notice that upsampler.scale_factor=[2,2,2], update x
 
                 if self.is_add_dec:
                     for module in block:
@@ -516,7 +516,7 @@ class StructPredictionNet(nn.Module):
                     logger.info("cut off at depth %d with ratio %03f" % (feat_depth, current_ratio))
                     struct_decision = struct_decision.jagged_like(torch.zeros_like(struct_decision.jdata))
                     
-            res.structure_grid[feat_depth] = self.up_sample0(x, struct_decision).grid
+            res.structure_grid[feat_depth] = self.up_sample0(x, struct_decision).grid # up_sample0.scale_factor=1, update res.structure_grid
             feat_depth -= 1
         x = self.up_sample0(x, struct_decision)
         
@@ -578,7 +578,7 @@ class StructPredictionNet(nn.Module):
         dist_features = []
         res, x, mu, log_sigma = self.encode(x, hash_tree, neck_bound=neck_bound, batch=batch)
         dist_features.append((mu, log_sigma))
-        posterior = reparametrize(mu, log_sigma)
+        posterior = reparametrize(mu, log_sigma) # (16x16x16, 32)
 
         if noise_step > 0:
             noise = torch.randn_like(posterior)

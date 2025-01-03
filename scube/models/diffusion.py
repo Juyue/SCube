@@ -693,7 +693,7 @@ class Model(BaseModel):
         self.generate_fvdb_grid_on_the_fly(batch)
         # first get latent from vae
         with torch.no_grad():
-            latents = self.extract_latent(batch)
+            latents = self.extract_latent(batch) # latents: [N, C], where N = res^3
 
         # To Do: scale the latent
         if self.hparams.scale_by_std:
@@ -811,7 +811,7 @@ class Model(BaseModel):
         return loss_dict, metric_dict 
     
     def train_val_step(self, batch, batch_idx, is_val):
-        if batch_idx % 100 == 0:
+        if batch_idx % 1 == 0:
             # Squeeze memory really hard :)
             gc.collect()
             torch.cuda.empty_cache()
@@ -856,7 +856,7 @@ class Model(BaseModel):
                     cond_dict['text_emb'] = text_emb
                     cond_dict['text_emb_mask'] = mask
                 
-                if self.trainer.global_rank == 0: # only log the image on rank 0
+                if self.trainer.global_rank == 0 and self.hparams.voxel_size >= 0.2: # only log the image on rank 0, only for waymo dataset.
                     if batch_idx == 0 or batch_idx % self.val_sample_interval == 0:
                         logger.info("running visualisation on rank 0...")
                         with self.ema_scope("Plotting"):

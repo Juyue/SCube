@@ -36,7 +36,6 @@ class FVDBExampleDataDataset(RandomSafeDataset):
             
     def _get_item(self, data_id, rng):
         data_id = data_id % len(self.files)
-        print("Loading file: ", self.files[data_id])
 
         data = {}
         input_data = torch.load(self.files[data_id])

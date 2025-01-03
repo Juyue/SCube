@@ -144,12 +144,6 @@ def readable_name_from_exec(exec_list: List[str]):
 
 
 if __name__ == '__main__':
-    import debugpy
-    debugpy.listen(5700)
-    print("Waiting for client...")
-    debugpy.wait_for_client()
-    print("Client connected!")
-
     """""""""""""""""""""""""""""""""""""""""""""""
     [1] Parse and initialize program arguments
         these include: --debug, --profile, --gpus, --num_nodes, --resume, ...
@@ -170,11 +164,19 @@ if __name__ == '__main__':
     program_parser.add_argument('--resume_from_ckpt', default=None, type=str, help='checkpoint path we want to load')
     program_parser.add_argument('--model_precision', default=32, help='Model precision to use.')
     program_parser.add_argument('--seed', type=int, default=0, help='Set a random seed.')
+    program_parser.add_argument('--debugpy', action='store_true', help='Enable debugpy for remote debugging.')
     program_parser = pl.Trainer.add_argparse_args(program_parser)
+
     # Remove some args, which we think should be model-based.
     remove_option(program_parser, '--accumulate_grad_batches')
     program_args, other_args = program_parser.parse_known_args()
 
+    if program_args.debugpy and program_args.gpus == 1:
+        import debugpy
+        debugpy.listen(5700)
+        print("Waiting for client...")
+        debugpy.wait_for_client()
+        print("Client connected!")
 
     model_parser = exp.ArgumentParserX(base_config_path='configs/default/param.yaml')
     model_args = model_parser.parse_args(other_args)
@@ -191,13 +193,13 @@ if __name__ == '__main__':
         if not os.path.exists(program_args.wandb_base):
             os.makedirs(program_args.wandb_base)
             
-        WANDB_USER_NAME = 'nvidia-toronto'
+        WANDB_USER_NAME = 'juyurche'
         wname = program_args.wname
         sep_pos = str(model_args.name).find('/')
         project_name = model_args.name[:sep_pos]
         run_name = model_args.name[sep_pos + 1:] + "/" + wname
 
-        check_wandb_name = f"wdb:{WANDB_USER_NAME}/scube-{project_name}/{run_name}:last"
+        check_wandb_name = f"wdb:{WANDB_USER_NAME}/4dgen-{project_name}/{run_name}:last"
         try:
             print("Try to load from wandb:", check_wandb_name)
             wdb_run, args_ckpt = wandb_util.get_wandb_run(check_wandb_name, wdb_base=program_args.wandb_base, default_ckpt="last")
@@ -339,7 +341,7 @@ if __name__ == '__main__':
                 run_name = model_args.name[sep_pos + 1:] + "/" + wname
 
             if is_rank_node_zero():
-                logger = WandbLogger(name=run_name, save_dir=program_args.wandb_base, project='scube-' + project_name)
+                logger = WandbLogger(name=run_name, save_dir=program_args.wandb_base, project='4drecon-' + project_name)
             else:
                 pass
         else:
