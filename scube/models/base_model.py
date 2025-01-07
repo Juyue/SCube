@@ -329,7 +329,7 @@ class BaseModel(pl.LightningModule):
                 else:
                     img = [img]
 
-                self.trainer.logger.log_image(key=name, images=img, file_type=['jpg'] * len(img))
+                self.trainer.logger.log_image(key=name, images=img, file_type=['png'] * len(img))
                 # self.trainer.logger.experiment.log({name: wandb.Image(img)})
 
     def log_video(self, name: str, video, fps=4):

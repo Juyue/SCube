@@ -49,7 +49,7 @@ from scube.modules.encoders import (Box3dEncoder, ClassEmbedder, Lift3DEncoder,
                                     StructEncoder3D_v2)
 from scube.utils import exp, wandb_util
 from scube.utils.embedder_util import get_embedder
-from scube.utils.vis_util import vis_pcs
+from scube.utils.vis_util import vis_pcs, visualize_normal_recon, visualize_structure_recon
 from scube.utils.voxel_util import (offscreen_mesh_render_for_vae_decoded_list,
                                     single_semantic_voxel_to_mesh)
 from scube.utils.wandb_util import (find_mismatched_keys,
@@ -375,6 +375,10 @@ class Model(BaseModel):
     def extract_latent(self, batch):
         return self.vae._encode(batch, use_mode=False)
     
+    @torch.no_grad()
+    def get_hash_tree(self, batch):
+        return self.vae.build_hash_tree_from_grid(batch["input_grid"])
+    
     def get_pos_embed(self, h):
         return h[:, :3]
     
@@ -596,7 +600,7 @@ class Model(BaseModel):
             # traing-time: get single scan crop from batch
             if batch is not None:
                 # assert self.hparams.use_fvdb_loader is True, "use_fvdb_loader should be True for normal concat condition"
-                ref_grid = fvdb.cat(batch[DS.INPUT_PC])    
+                ref_grid = fvdb.jcat(batch[DS.INPUT_PC])    
                 ref_xyz = ref_grid.grid_to_world(ref_grid.ijk.float()) 
                 concat_normal = noisy_latents.grid.splat_trilinear(ref_xyz, fvdb.JaggedTensor(batch[DS.TARGET_NORMAL]))
             else:
@@ -693,25 +697,25 @@ class Model(BaseModel):
         self.generate_fvdb_grid_on_the_fly(batch)
         # first get latent from vae
         with torch.no_grad():
-            latents = self.extract_latent(batch) # latents: [N, C], where N = res^3
+            clean_latents = self.extract_latent(batch) # latents: [N, C], where N = res^3
 
         # To Do: scale the latent
         if self.hparams.scale_by_std:
-            latents = latents * self.scale_factor
+            clean_latents = clean_latents * self.scale_factor
 
         # then get the noise
-        latent_data = latents.data.jdata
+        latent_data = clean_latents.data.jdata
         noise = torch.randn_like(latent_data) # N, C
 
-        bsz = latents.grid.grid_count
+        bsz = clean_latents.grid.grid_count
         if self.hparams.use_noise_offset:
             noise_offset = torch.randn(bsz, noise.shape[1], device=noise.device) * self.hparams.noise_offset_scale
-            noise += noise_offset[latents.data.jidx.long()]
+            noise += noise_offset[clean_latents.data.jidx.long()]
 
         # Sample a random timestep for each latent
-        timesteps = torch.randint(0, self.noise_scheduler.config.num_train_timesteps, (bsz,), device=latents.device) # B
+        timesteps = torch.randint(0, self.noise_scheduler.config.num_train_timesteps, (bsz,), device=clean_latents.device) # B
         timesteps_sparse = timesteps.long()
-        timesteps_sparse = timesteps_sparse[latents.data.jidx.long()] # N, 1
+        timesteps_sparse = timesteps_sparse[clean_latents.data.jidx.long()] # N, 1
 
         # Add noise to the latents according to the noise magnitude at each timestep
         # (this is the forward diffusion process)
@@ -728,7 +732,8 @@ class Model(BaseModel):
 
         # Predict the noise residual and compute loss
         # forward_cond function use batch-level timesteps
-        noisy_latents = VDBTensor(grid=latents.grid, data=latents.grid.jagged_like(noisy_latents))
+        #NOTE: structure comes from clean_latents, data comes from noisy_latents
+        noisy_latents = VDBTensor(grid=clean_latents.grid, data=clean_latents.grid.jagged_like(noisy_latents))
         model_pred, other_loss_terms = self._forward_cond(noisy_latents, timesteps, batch)
 
         out.update({'pred': model_pred.data.jdata})
@@ -855,6 +860,29 @@ class Model(BaseModel):
                     mask = torch.stack(batch[DS.TEXT_EMBEDDING_MASK]) # B, 77
                     cond_dict['text_emb'] = text_emb
                     cond_dict['text_emb_mask'] = mask
+                
+                if self.trainer.global_rank == 0: 
+                    # 1. extract the latent code, as well as the ground truth hash tree
+                    clean_latents = self.extract_latent(batch)
+                    # 2. sample the latent code, and decode the latent code
+                    sample_latents = self.random_sample_latents(clean_latents.grid, use_ddim=self.hparams.use_ddim, ddim_step=100, cond_dict={})['latents'] 
+                    decoded_res, _ = self.vae_decode(sample_latents)
+
+                    # 
+                    output_dict = {
+                        "tree": decoded_res.structure_grid,
+                        "normal_features": decoded_res.normal_features,
+                    }
+                    # 1. compare the gt_tree and out_tree with gt_normal and out_normal
+                    grid_images = visualize_structure_recon(output_dict, save=False)
+                    normal_images = visualize_normal_recon(output_dict, batch, save=False)
+                    
+                    for grid_idx, grid_image in enumerate(grid_images):
+                        self.log_image(f'img/structure_grid_{grid_idx}', grid_image)
+                    for normal_image in normal_images:
+                        self.log_image(f'img/normal_grid_{grid_idx}', normal_image)
+                    # visualize the grid out of the diffusion process after decoding.
+
                 
                 if self.trainer.global_rank == 0 and self.hparams.voxel_size >= 0.2: # only log the image on rank 0, only for waymo dataset.
                     if batch_idx == 0 or batch_idx % self.val_sample_interval == 0:
@@ -1033,7 +1061,7 @@ class Model(BaseModel):
                 if batch is not None:
                     self.generate_latent_semantic_on_the_fly(batch, grids)
                     cond_dict['semantics'] = fvdb.JaggedTensor(batch[DS.LATENT_SEMANTIC])
-                elif res_coarse is not None:
+                # elif res_coarse is not None:
                     cond_semantic = res_coarse.semantic_features[-1].data.jdata # N, class_num
                     cond_semantic = torch.argmax(cond_semantic, dim=1)
                     cond_dict['semantics'] = grids.jagged_like(cond_semantic)
@@ -1042,7 +1070,7 @@ class Model(BaseModel):
         if self.hparams.use_normal_concat_cond:
             # traing-time: get single scan crop from batch
             if batch is not None:
-                ref_grid = fvdb.cat(batch[DS.INPUT_PC])    
+                ref_grid = fvdb.jcat(batch[DS.INPUT_PC])    
                 ref_xyz = ref_grid.grid_to_world(ref_grid.ijk.float()) 
                 concat_normal = grids.splat_trilinear(ref_xyz, fvdb.JaggedTensor(batch[DS.TARGET_NORMAL]))
             elif res_coarse is not None:
@@ -1141,7 +1169,7 @@ class Model(BaseModel):
             cond_dict['semantics'] = fvdb.JaggedTensor(batch[DS.LATENT_SEMANTIC])
 
         if self.hparams.use_normal_concat_cond:
-            ref_grid = fvdb.cat(batch[DS.INPUT_PC])    
+            ref_grid = fvdb.jcat(batch[DS.INPUT_PC])    
             ref_xyz = ref_grid.grid_to_world(ref_grid.ijk.float()) 
             concat_normal = grids.splat_trilinear(ref_xyz, fvdb.JaggedTensor(batch[DS.TARGET_NORMAL]))
             cond_dict['normal'] = concat_normal
@@ -1163,8 +1191,7 @@ class Model(BaseModel):
 
         return cond_dict
 
-
-    def random_sample_latents(self, grids: GridBatch, generator: torch.Generator = None, 
+    def randwm_sample_latents(self, grids: GridBatch, generator: torch.Generator = None, 
                               use_ddim=False, ddim_step=None, use_dpm=False, use_karras=False, solver_order=3,
                               cond_dict=None, guidance_scale=1.0, sdedit_dict=None) -> VDBTensor:
         """

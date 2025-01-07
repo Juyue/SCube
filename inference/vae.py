@@ -52,7 +52,7 @@ def get_parser():
     return parser
 
 @torch.inference_mode()
-def diffusion_and_save(net_model_vae, dataloader, saving_dir, known_args):
+def vae_and_save(net_model_vae, dataloader, saving_dir, known_args):
     for batch_idx, batch in enumerate(tqdm(dataloader)):
         batch = batch2device(batch, net_model_vae.device)
         output_dict = net_model_vae(batch, {})
@@ -97,7 +97,7 @@ def main():
     else:
         dataloader = net_model_vae.train_dataloader() 
 
-    diffusion_and_save(net_model_vae, dataloader, saving_dir, known_args)
+    vae_and_save(net_model_vae, dataloader, saving_dir, known_args)
 
 
 if __name__ == "__main__":

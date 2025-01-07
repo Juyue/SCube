@@ -28,7 +28,7 @@ from loguru import logger as loguru_logger
 from omegaconf import OmegaConf
 from packaging import version
 from pycg import exp
-from pytorch_lightning.callbacks import LearningRateMonitor, ModelCheckpoint
+from pytorch_lightning.callbacks import LearningRateMonitor, ModelCheckpoint, DeviceStatsMonitor
 from pytorch_lightning.loggers import TensorBoardLogger, WandbLogger
 from pytorch_lightning.plugins.training_type.dp import DataParallelPlugin
 from pytorch_lightning.utilities import rank_zero_only
@@ -271,6 +271,7 @@ if __name__ == '__main__':
     )
     lr_record_callback = LearningRateMonitor(logging_interval='step')
     copy_model_file_callback = CopyModelFileCallback()
+    device_stats_callback = DeviceStatsMonitor()
 
     # Determine parallel plugin:
     if program_args.accelerator == 'ddp':
@@ -368,7 +369,7 @@ if __name__ == '__main__':
     # Build trainer
     trainer = pl.Trainer.from_argparse_args(
         program_args,
-        callbacks=[checkpoint_callback, lr_record_callback, copy_model_file_callback]
+        callbacks=[checkpoint_callback, lr_record_callback, copy_model_file_callback, device_stats_callback]
         if logger is not None else [checkpoint_callback],
         logger=logger,
         log_every_n_steps=20,

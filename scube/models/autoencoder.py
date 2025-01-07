@@ -7,6 +7,7 @@
 # license agreement from NVIDIA CORPORATION & AFFILIATES is strictly prohibited.
 
 import gc
+import os
 
 import fvdb
 import fvdb.nn as fvnn
@@ -26,6 +27,7 @@ from scube.modules.autoencoding.base_encoder import Encoder
 from scube.modules.autoencoding.losses.base_loss import Loss
 from scube.modules.autoencoding.sunet import StructPredictionNet
 from scube.utils.voxel_util import offsreen_mesh_renderer_for_vae
+from scube.utils.vis_util import visualize_normal_recon, visualize_structure_recon
 
 def reparametrize(mu, logvar):
     std = logvar.div(2).exp()
@@ -190,6 +192,17 @@ class Model(BaseModel):
 
                     rendered = offsreen_mesh_renderer_for_vae([(gt_grid_, gt_semantic), (pred_grid_, pred_semantic)])
                     self.log_image('img/sample', rendered)
+            #  
+            if self.trainer.global_rank == 0:
+                try:    
+                    grid_images = visualize_structure_recon(out, save=False, saving_dir=None, fname_prefix=f"vae")
+                    normal_images = visualize_normal_recon(out, batch, save=False, saving_dir=None, fname_prefix=f"vae")
+                    for grid_idx, grid_image in enumerate(grid_images):
+                        self.log_image(f'img/structure_grid_{grid_idx}', grid_image)
+                    for normal_image in normal_images:
+                        self.log_image(f'img/normal_grid_{grid_idx}', normal_image)
+                except Exception as e:
+                    logger.error(f"Error visualizing structure or normal: {e}")
 
         loss_sum = loss_dict.get_sum()
         self.log('val_loss' if is_val else 'train_loss/sum', loss_sum)

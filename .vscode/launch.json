@@ -1,0 +1,34 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Python: Attach 5700",
+            "type": "python",
+            "request": "attach",
+            "port": 5700,
+            "host": "localhost",
+            "justMyCode": false,
+            "pathMappings": [
+                {
+                    "localRoot": "${workspaceFolder}",
+                    "remoteRoot": "/root/SCube"
+                }
+            ]
+        },
+    ],
+    "compounds": [
+        {
+            "name": "test",
+            "configurations": [
+                "Python: Attach 5700",
+            ],
+            "stopAll": true
+        }
+    ],
+
+
+
+}

@@ -3,3 +3,18 @@ include_configs:
   - data.yaml
 
 name: 'fvdb_example_data/VAE_sparse'
+
+# scale down the model
+network:
+  encoder:
+    # c_dim: 8
+    # c_dim: 16
+    c_dim: 32 #OOM
+  unet:
+    params:
+      # in_channels: 8
+      # f_maps: 8
+      # in_channels: 16
+      # f_maps: 16
+      in_channels: 32
+      f_maps: 32

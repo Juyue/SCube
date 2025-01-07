@@ -3,6 +3,9 @@ model: diffusion
 vae_config: ""
 vae_checkpoint: ""
 
+
+
+
 voxel_size: 0.01
 resolution: 128
 

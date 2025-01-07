@@ -1,7 +1,7 @@
 _fvdb_example_data_path: "/root/datasets/fvdb_example_data/xcube"
 
 train_dataset: FVDBExampleDataDataset
-train_val_num_workers: 4
+train_val_num_workers: 2
 train_kwargs:
   onet_base_path: ${_fvdb_example_data_path}
   resolution: ${resolution}

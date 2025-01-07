@@ -14,3 +14,7 @@ use_pos_embed: true
 
 vae_config: "configs/fvdb_example_data/train_vae_128x128x128_sparse.yaml"
 vae_checkpoint: "checkpoints/fvdb_example_data/fine_vae/last.ckpt"
+
+network:
+  diffuser:
+    model_channels: 32

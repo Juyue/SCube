@@ -9,5 +9,5 @@ vae_checkpoint: "/root/SCube/checkpoints/fvdb_example_data/coarse_vae/last.ckpt"
 
 network:
   diffuser:
-    model_channels: 192
+    model_channels: 64
     num_res_blocks: 1
