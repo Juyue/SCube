@@ -307,13 +307,12 @@ class Model(BaseModel):
 
         if not self.hparams.use_hash_tree:
             hash_tree = None
-
         unet_feat = self.encoder(input_grid, batch)
         unet_feat = fvnn.VDBTensor(input_grid, input_grid.jagged_like(unet_feat))
-        _, x, mu, log_sigma = self.unet.encode(unet_feat, hash_tree=hash_tree, batch=batch)
+        _, x, mu, logvar = self.unet.encode(unet_feat, hash_tree=hash_tree, batch=batch)
         if use_mode:
             sparse_feature = mu
         else:
-            sparse_feature = reparametrize(mu, log_sigma)
+            sparse_feature = reparametrize(mu, logvar)
         
         return fvnn.VDBTensor(x.grid, x.grid.jagged_like(sparse_feature))

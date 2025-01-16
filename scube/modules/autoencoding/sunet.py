@@ -491,14 +491,12 @@ class StructPredictionNet(nn.Module):
         """
         for module in self.post_kl_bottleneck:
             x, _ = module(x)
-        
         struct_decision = None
         feat_depth = self.num_blocks - 1
         for block, upsampler, struct_conv in zip(
                 [None] + list(self.decoders), [None] + list(self.upsamplers), self.struct_convs):  
             if block is not None:
                 x = upsampler(x, struct_decision) # notice that upsampler.scale_factor=[2,2,2], update x
-
                 if self.is_add_dec:
                     for module in block:
                         x, _ = module(x)
@@ -576,9 +574,11 @@ class StructPredictionNet(nn.Module):
                 neck_bound = None
         ):
         dist_features = []
-        res, x, mu, log_sigma = self.encode(x, hash_tree, neck_bound=neck_bound, batch=batch)
-        dist_features.append((mu, log_sigma))
-        posterior = reparametrize(mu, log_sigma) # (16x16x16, 32)
+        # mu: (num_active_voxels, c/cut_off), example (16x16x16, 4) ; 
+        # logvar: same as mu 
+        res, x, mu, logvar = self.encode(x, hash_tree, neck_bound=neck_bound, batch=batch)
+        dist_features.append((mu, logvar))
+        posterior = reparametrize(mu, logvar) # (16x16x16, 32)
 
         if noise_step > 0:
             noise = torch.randn_like(posterior)
