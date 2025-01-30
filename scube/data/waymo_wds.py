@@ -76,7 +76,7 @@ class WaymoWdsDataset(BaseWdsDataset):
             cam2world: the front camera c2w (note that opencv convention, RDF) matrix
                 in the first frame from input frames
 
-            grid's coordinate is grid_to_world (FLU convention)
+            grid's coordinate is grid_to_world (FLU convention, Front Left Up)
 
         """
         pc_names = [x for x in sample.keys() if 'pcd' in x]

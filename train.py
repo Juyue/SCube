@@ -24,7 +24,6 @@ import pytorch_lightning as pl
 import torch
 import wandb
 import yaml
-from loguru import logger as loguru_logger
 from omegaconf import OmegaConf
 from packaging import version
 from pycg import exp

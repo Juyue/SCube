@@ -7,17 +7,17 @@ name: 'scene-recon/waymo_wds'
 
 # data. we select (almost) static scenes for GSM training
 train_kwargs:
-  wds_scene_list_file: "../waymo_split/official_train_static_scene.json" 
+  wds_scene_list_file: "/root/datasets/waymo_split/official_train_static_scene.json" 
 val_kwargs:
-  wds_scene_list_file: "../waymo_split/official_val_static_scene.json"
+  wds_scene_list_file: "/root/datasets/waymo_split/official_val_static_scene.json"
 test_kwargs:
-  wds_scene_list_file: "../waymo_split/official_val_static_scene.json"
+  wds_scene_list_file: "/root/datasets/waymo_split/official_val_static_scene.json"
 
 _attr_subfolders: ['image_front', 'image_front_left', 'image_front_right', 
                    'pose', 'intrinsic', 
                    'skymask_front', 'skymask_front_left', 'skymask_front_right',
                    'dynamic_object_transformation', 'dynamic_object_points_canonical', 
-                   'pc_voxelsize_01',
+                  #  'pc_voxelsize_01',
                    ]
 _fvdb_grid_type: 'vs01'
 _input_slect_ids: [0,1,2]

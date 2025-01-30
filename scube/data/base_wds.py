@@ -376,7 +376,6 @@ class BaseWdsDataset(torch.utils.data.IterableDataset):
 
                 # 2) decode the reassemble_sample data.
                 reassemble_sample = self.decode_func(reassemble_sample)
-
                 # 3) data transform
                 try:
                     reassemble_sample = self.data_transform(reassemble_sample)

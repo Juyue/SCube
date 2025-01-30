@@ -23,7 +23,7 @@ from waymo_open_dataset.utils import frame_utils
 from google.protobuf import json_format
 from tqdm import tqdm
 
-DEBUG = False
+DEBUG = True 
 
 if int(tf.__version__.split(".")[0]) < 2:
     tf.enable_eager_execution()
@@ -143,6 +143,7 @@ class WaymoDataExtractor:
                     return WaymoDataExtractor.RETURN_SKIP
 
                 sensor_params = self.extract_sensor_params(frame)
+                # dict_keys(['lane', 'road_line', 'road_edge', 'crosswalk', 'speed_bump', 'driveway']) 
                 map_data = self.extract_map_data(frame)
                 # record the vehicle pose at the first frame
                 vehicle_init_pose = np.array(frame.pose.transform).reshape((4, 4))

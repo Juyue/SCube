@@ -28,11 +28,11 @@ from tqdm import tqdm
 from datagen.scube_data_utils import object_info_to_cuboid, object_info_to_object2world, get_points_in_cuboid, object_info_to_canonical_cuboid, \
     encode_dict_to_npz_bytes, imageencoder_imageio_png16, project_points_to_depth_image, align_depth_to_depth_batch, inference_metric3dv2, inference_mmseg
 
-SAVE_RGB_WDS = False
-SAVE_SEGMENTATION_WDS = False
-SAVE_POSE_WDS = False
-SAVE_DYNAMIC_OBJECT_BBOX_WDS = False
-SAVE_ALL_OBJECT_BBOX_WDS = False 
+SAVE_RGB_WDS = True
+SAVE_SEGMENTATION_WDS = True
+SAVE_POSE_WDS = True 
+SAVE_DYNAMIC_OBJECT_BBOX_WDS = True
+SAVE_ALL_OBJECT_BBOX_WDS = True 
 SAVE_DEPTH_WDS = True
 
 RECTIFY_DEPTH_AFFINE = True
@@ -99,6 +99,7 @@ def generate_shards(clip_id,
     image_folder_p = ns_extraction_image_root_p / clip_id / 'images'
 
     print(f"Processing {clip_id}...")
+    import pdb; pdb.set_trace()
 
     if SAVE_RGB_WDS:
         for camera_name in camera_names:
@@ -115,6 +116,7 @@ def generate_shards(clip_id,
             # write to tar file
             output_file = output_root_p / f"image_{camera_name.lower()}" / f"{clip_id}.tar"
             write_to_tar(sample, output_file)
+    import pdb; pdb.set_trace()
 
     if SAVE_SEGMENTATION_WDS:
         for camera_name in camera_names:

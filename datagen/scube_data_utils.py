@@ -200,7 +200,7 @@ def get_points_in_cuboid(lidar_points, lidar_to_world, object_info):
 
 ############ Depth Related ############
 @torch.inference_mode()
-def inference_metric3dv2(video_tensor, max_depth=199.9, metric3d_model='metric3d_vit_large', chunking_num = 100):
+def inference_metric3dv2(video_tensor, max_depth=199.9, metric3d_model='metric3d_vit_small', chunking_num = 100):
     """
     Args:
         video_tensor: torch.Tensor, shape (T, C, H, W), normalized to [0, 1]
