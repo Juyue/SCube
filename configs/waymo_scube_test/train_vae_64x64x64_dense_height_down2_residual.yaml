@@ -2,7 +2,7 @@ include_configs:
   - ../train/vae/vae_16x16x16_dense_residual.yaml
   - dataset.yaml
 
-name: 'scene-recon/waymo_wds'
+name: 'waymo_scube_test/VAE_64x64x64_dense_height_down2_residual'
 
 # data
 batch_size: 1

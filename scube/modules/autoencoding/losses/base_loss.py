@@ -167,11 +167,11 @@ class Loss(nn.Module):
                 for feat_depth, pd_struct_i in out['structure_features'].items():
                     downsample_factor = 2 ** feat_depth
                     if self.hparams.remain_h:
-                        pd_voxel_size = pd_struct_i.grid.voxel_sizes[0]
-                        h_factor = pd_voxel_size[0] // pd_voxel_size[2]
-                        downsample_factor = [downsample_factor, downsample_factor, downsample_factor // h_factor]
+                        pd_voxel_size = pd_struct_i.grid.voxel_sizes[0] # [1.6, 1.6, 0.8]
+                        h_factor = pd_voxel_size[0] // pd_voxel_size[2] # 2
+                        downsample_factor = [downsample_factor, downsample_factor, downsample_factor // h_factor] # [4, 4, 2]
                     if downsample_factor != 1:             
-                        gt_grid_i = gt_grid.coarsened_grid(downsample_factor)
+                        gt_grid_i = gt_grid.coarsened_grid(downsample_factor) # [0.4, 0.4, 0.4] -> [1.6, 1.6, 0.8]
                         dyn_grid_i = dynamic_grid.coarsened_grid(downsample_factor) if dynamic_grid is not None else None
                     else:
                         gt_grid_i = gt_grid

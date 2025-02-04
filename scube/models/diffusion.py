@@ -54,6 +54,8 @@ from scube.utils.voxel_util import (offscreen_mesh_render_for_vae_decoded_list,
                                     single_semantic_voxel_to_mesh)
 from scube.utils.wandb_util import (find_mismatched_keys,
                                     load_state_dict_into_model)
+
+from scube.modules.diffusionmodules.hparams import hparams_handler
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 
@@ -69,82 +71,9 @@ def lambda_lr_wrapper(it, lr_config, batch_size):
 class Model(BaseModel):
     def __init__(self, hparams):
         super().__init__(hparams)
-        if not hasattr(self.hparams, 'ema'):
-            self.hparams.ema = False
-        if not hasattr(self.hparams, 'use_ddim'):
-            self.hparams.use_ddim = False
-        if not hasattr(self.hparams, 'scale_by_std'):
-            self.hparams.scale_by_std = False
-        if not hasattr(self.hparams, 'scale_factor'):
-            self.hparams.scale_factor = 1.0
-        if not hasattr(self.hparams, 'num_inference_steps'):
-            self.hparams.num_inference_steps = 1000
-        if not hasattr(self.hparams, 'conditioning_key'):
-            self.hparams.conditioning_key = "none"
-        if not hasattr(self.hparams, 'log_image'):
-            self.hparams.log_image = True
-
-        # position embedding
-        if not hasattr(self.hparams, 'use_pos_embed'):
-            self.hparams.use_pos_embed = False
-        if not hasattr(self.hparams, 'use_pos_embed_high'):
-            self.hparams.use_pos_embed_high = False
-        if not hasattr(self.hparams, 'use_pos_embed_world'):
-            self.hparams.use_pos_embed_world = False
-        if not hasattr(self.hparams, 'use_pos_embed_world_high'):
-            self.hparams.use_pos_embed_world_high = False
-
-        # setup diffusion condition
-        if not hasattr(self.hparams, 'use_mask_cond'):
-            self.hparams.use_mask_cond = False
-        if not hasattr(self.hparams, 'use_point_cond'):
-            self.hparams.use_point_cond = False
-        if not hasattr(self.hparams, 'use_semantic_cond'):
-            self.hparams.use_semantic_cond = False
-        if not hasattr(self.hparams, 'use_normal_concat_cond'):
-            self.hparams.use_normal_concat_cond = False 
-            
-        if not hasattr(self.hparams, 'use_single_scan_concat_cond'):
-            self.hparams.use_single_scan_concat_cond = False
-        if not hasattr(self.hparams, 'encode_single_scan_by_points'):
-            self.hparams.encode_single_scan_by_points = False
-            
-        if not hasattr(self.hparams, 'use_class_cond'):
-            self.hparams.use_class_cond = False
-        if not hasattr(self.hparams, 'use_micro_cond'):
-            self.hparams.use_micro_cond = False
-        if not hasattr(self.hparams, 'use_text_cond'):
-            self.hparams.use_text_cond = False
-        if not hasattr(self.hparams, 'use_image_w_depth_cond'):
-            self.hparams.use_image_w_depth_cond = False
-        if not hasattr(self.hparams, 'use_image_lss_cond'):
-            self.hparams.use_image_lss_cond = False
-        if not hasattr(self.hparams, 'use_map_3d_cond'):
-            self.hparams.use_map_3d_cond = False
-        if not hasattr(self.hparams, 'use_box_3d_cond'):
-            self.hparams.use_box_3d_cond = False
-
-        # noise offset config
-        if not hasattr(self.hparams, 'use_noise_offset'):
-            self.hparams.use_noise_offset = False
-            
-        # classifier-free config
-        if not hasattr(self.hparams, 'use_classifier_free'):
-            self.hparams.use_classifier_free = False # text cond in not influenced by this flag
-        if not hasattr(self.hparams, 'classifier_free_prob'):
-            self.hparams.classifier_free_prob = 0.1 # prob to drop the label
-            
-        # finetune config
-        if not hasattr(self.hparams, 'pretrained_model_name_or_path'):
-            self.hparams.pretrained_model_name_or_path = None
-        if not hasattr(self.hparams, 'ignore_mismatched_size'):
-            self.hparams.ignore_mismatched_size = False
-
-        # vae config
-        if not hasattr(self.hparams, 'finetune_vae_decoder'):
-            self.hparams.finetune_vae_decoder = False
 
         # get vae model
+        self.hparams = hparams_handler(hparams)
         if self.hparams.finetune_vae_decoder:
             if not hasattr(self, 'vae_is_finetuned'): 
                 # first time we need to load the vae

@@ -99,7 +99,6 @@ def generate_shards(clip_id,
     image_folder_p = ns_extraction_image_root_p / clip_id / 'images'
 
     print(f"Processing {clip_id}...")
-    import pdb; pdb.set_trace()
 
     if SAVE_RGB_WDS:
         for camera_name in camera_names:
@@ -116,7 +115,6 @@ def generate_shards(clip_id,
             # write to tar file
             output_file = output_root_p / f"image_{camera_name.lower()}" / f"{clip_id}.tar"
             write_to_tar(sample, output_file)
-    import pdb; pdb.set_trace()
 
     if SAVE_SEGMENTATION_WDS:
         for camera_name in camera_names:

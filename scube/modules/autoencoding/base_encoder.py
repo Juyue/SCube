@@ -64,9 +64,9 @@ class Encoder(nn.Module):
             unet_feat = torch.cat([unet_feat, input_normal.jdata], dim=1)
 
         if self.hparams.use_input_semantic:
-            input_semantic = fvdb.JaggedTensor(batch[DS.GT_SEMANTIC])
-            input_semantic_embed = self.semantic_embed_fn(input_semantic.jdata.long())
-            unet_feat = torch.cat([unet_feat, input_semantic_embed], dim=1)
+            input_semantic = fvdb.JaggedTensor(batch[DS.GT_SEMANTIC]) # (B, N)
+            input_semantic_embed = self.semantic_embed_fn(input_semantic.jdata.long()) # (B, N, D)
+            unet_feat = torch.cat([unet_feat, input_semantic_embed], dim=1) # cat, 32 + 33
 
         if self.hparams.use_input_intensity:
             input_intensity = fvdb.JaggedTensor(batch[DS.INPUT_INTENSITY])

@@ -525,7 +525,7 @@ class StructPredictionNet(nn.Module):
         if self.with_semantic_branch:
             # check if there is activate features
             if x.grid.total_voxels > 0:
-                res.semantic_features[feat_depth] = self.semantic_head(x)
+                res.semantic_features[feat_depth] = self.semantic_head(x) # (B, N, D) -> (B, N, num_classes)
         if self.with_color_branch:
             # check if there is activate features
             if x.grid.total_voxels > 0:

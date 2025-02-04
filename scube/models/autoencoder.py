@@ -193,7 +193,7 @@ class Model(BaseModel):
                     rendered = offsreen_mesh_renderer_for_vae([(gt_grid_, gt_semantic), (pred_grid_, pred_semantic)])
                     self.log_image('img/sample', rendered)
             #  
-            if self.trainer.global_rank == 0:
+            if self.trainer.global_rank == 0 and self.hparams.voxel_size[0] <= 0.2:
                 try:    
                     grid_images = visualize_structure_recon(out, save=False, saving_dir=None, fname_prefix=f"vae")
                     normal_images = visualize_normal_recon(out, batch, save=False, saving_dir=None, fname_prefix=f"vae")
