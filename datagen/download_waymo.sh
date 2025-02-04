@@ -4,8 +4,11 @@
 
 # NOTE: Before proceeding, you need to fill out the Waymo terms of use and complete `gcloud auth login`.
 
+# NOTE: For some reason, could not download file to s3 nfs directly. Therefore, we download to a temporary directory (ec2 home directory) first, then move to the final dataset directory.
+
 jfile=$1 # json file containing the list of Waymo clip ids to download
 dest=$2 # destination directory to save the downloaded tfrecords
+finaldset=$3 # final dataset name
 
 mkdir -p $dest
 
@@ -30,4 +33,11 @@ for filename in $lst; do
     # or can be in validation
     source=gs://waymo_open_dataset_v_1_4_2/individual_files/validation
     gsutil cp -n ${source}/${filename_full} ${dest}
+
+    sleep 1
+    # move the file to the final dataset directory
+    cp ${dest}/${filename_full} ${finaldset}/${filename_full} 
+
+    sleep 1
+    rm ${dest}/${filename_full}
 done

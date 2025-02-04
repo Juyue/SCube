@@ -860,14 +860,20 @@ class Model(BaseModel):
                     mask = torch.stack(batch[DS.TEXT_EMBEDDING_MASK]) # B, 77
                     cond_dict['text_emb'] = text_emb
                     cond_dict['text_emb_mask'] = mask
-                
+
+
                 if self.trainer.global_rank == 0: 
                     # 1. extract the latent code, as well as the ground truth hash tree
                     clean_latents = self.extract_latent(batch)
+                    if self.hparams.use_normal_concat_cond and batch is not None:
+                        # assert self.hparams.use_fvdb_loader is True, "use_fvdb_loader should be True for normal concat condition"
+                        ref_grid = fvdb.jcat(batch[DS.INPUT_PC])    
+                        ref_xyz = ref_grid.grid_to_world(ref_grid.ijk.float()) 
+                        concat_normal = clean_latents.grid.splat_trilinear(ref_xyz, fvdb.JaggedTensor(batch[DS.TARGET_NORMAL]))
+                        cond_dict['normal'] = concat_normal
                     # 2. sample the latent code, and decode the latent code
-                    sample_latents = self.random_sample_latents(clean_latents.grid, use_ddim=self.hparams.use_ddim, ddim_step=100, cond_dict={})['latents'] 
+                    sample_latents = self.random_sample_latents(clean_latents.grid, use_ddim=self.hparams.use_ddim, ddim_step=100, cond_dict=cond_dict)['latents'] 
                     decoded_res, _ = self.vae_decode(sample_latents)
-
                     # 
                     output_dict = {
                         "tree": decoded_res.structure_grid,
@@ -1007,12 +1013,6 @@ class Model(BaseModel):
                             scene: render.Scene = vis.show_3d(geometry_list, show=False, up_axis='+Z', default_camera_kwargs={"pitch_angle": 25.0, "fill_percent": 0.5, "fov": 40.0, 'plane_angle': 90})
                             img = scene.render_filament()
                             self.log_image("img/3d_box3d_cond", img)
-
-                else:
-                    if batch_idx <= 0:
-                        clean_latents = self.extract_latent(batch)
-                        grids = clean_latents.grid
-                        _ = self.random_sample_latents(grids, use_ddim=self.hparams.use_ddim, ddim_step=100, cond_dict=cond_dict)['latents'] # TODO: change this ddim_step to variable
 
         loss_sum = loss_dict.get_sum()
         self.log('val_loss' if is_val else 'train_loss/sum', loss_sum)
@@ -1191,7 +1191,7 @@ class Model(BaseModel):
 
         return cond_dict
 
-    def randwm_sample_latents(self, grids: GridBatch, generator: torch.Generator = None, 
+    def random_sample_latents(self, grids: GridBatch, generator: torch.Generator = None, 
                               use_ddim=False, ddim_step=None, use_dpm=False, use_karras=False, solver_order=3,
                               cond_dict=None, guidance_scale=1.0, sdedit_dict=None) -> VDBTensor:
         """

@@ -23,7 +23,7 @@ from waymo_open_dataset.utils import frame_utils
 from google.protobuf import json_format
 from tqdm import tqdm
 
-DEBUG = True 
+DEBUG = False 
 
 if int(tf.__version__.split(".")[0]) < 2:
     tf.enable_eager_execution()
