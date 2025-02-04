@@ -59,6 +59,7 @@ class Model(BaseModel):
         self.loss = UnifiedLoss(self.hparams)
 
     def forward(self, batch, update_grid_mask=True):
+        import pdb; pdb.set_trace()
         self.voxel_preprocess(batch, update_grid_mask=update_grid_mask)
         imgenc_output = self.img_encoder(batch)
         skyenc_output = self.skybox.encode_sky_feature(batch, imgenc_output)

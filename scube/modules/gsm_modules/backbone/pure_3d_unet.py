@@ -652,6 +652,7 @@ class Pure3DUnet(nn.Module):
         return gs_feature
 
     def forward(self, batch, imgenc_output):
+        import pdb; pdb.set_trace()
         x_grid = batch[DS.INPUT_PC]
         voxel_features = self.lifter(batch, imgenc_output)
         x = fvnn.VDBTensor(x_grid, x_grid.jagged_like(voxel_features))
