@@ -2,15 +2,15 @@ include_configs:
   - ../train/diffusion/diffusion_16x16x16_dense.yaml
   - dataset.yaml
 
-name: 'scene-recon/waymo_wds'
+name: 'waymo_scube_test/diffusion_64x64x64_image_cond'
 
-vae_config: configs/waymo_scube/train_vae_64x64x64_dense_height_down2_residual.yaml
-# vae_checkpoint: '../wandb/scube-scene-recon/l1s2zzzi/checkpoints/last.ckpt'
-vae_checkpoint: '../wandb/scube-scene-recon/[YOUR_RUN_ID]/checkpoints/last.ckpt'
+vae_config: configs/waymo_scube_test/train_vae_64x64x64_dense_height_down2_residual.yaml
+# vae_checkpoint: '../wandb/scube-scene-recon/[YOUR_RUN_ID]/checkpoints/last.ckpt'
+vae_checkpoint: '/root/wandb/4drecon-waymo_scube_test/8yfibg5y/checkpoints/last.ckpt'
 
 # data
-accumulate_grad_batches: 16
-batch_size: 2
+accumulate_grad_batches: 1
+batch_size: 1 # batch 1?
 batch_size_val: 1
 voxel_size: 0.4
 use_fvdb_loader: true

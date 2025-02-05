@@ -652,7 +652,6 @@ class Pure3DUnet(nn.Module):
         return gs_feature
 
     def forward(self, batch, imgenc_output):
-        import pdb; pdb.set_trace()
         x_grid = batch[DS.INPUT_PC]
         voxel_features = self.lifter(batch, imgenc_output)
         x = fvnn.VDBTensor(x_grid, x_grid.jagged_like(voxel_features))
@@ -706,6 +705,7 @@ class Lifter(nn.Module):
         Returns:
             voxel_features: JaggedTensor
         """
+        import pdb; pdb.set_trace()
         img_features = imgenc_output[self.img_feature_source]
         grid = batch[DS.INPUT_PC]
         camera_pose = torch.stack(batch[DS.IMAGES_INPUT_POSE], dim=0)
@@ -732,7 +732,6 @@ class Lifter(nn.Module):
             input_effective_mask = input_effective_mask.view(B, N, 1, H, W)
             
         imgenc_output['input_effective_mask_resized'] = input_effective_mask.view(B, N, 1, H, W)
-
 
         for bidx in range(grid.grid_count):
             cur_grid = grid[bidx]

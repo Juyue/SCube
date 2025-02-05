@@ -118,7 +118,7 @@ class UnifiedEncoder(nn.Module):
 
         # !! encode the input image, note that no sky mask applied on the encoded feat!!
         for encoder_name, encoder in self.encoders.items():
-            imgenc_output[encoder_name] = encoder(input_image, camera_info=camera_info, batch=batch)
+            imgenc_output[encoder_name] = encoder(input_image, camera_info=camera_info, batch=batch) # [B, N, C(32), H, W]
 
         # !! add original RGB image
         imgenc_output['original_rgb'] = input_image

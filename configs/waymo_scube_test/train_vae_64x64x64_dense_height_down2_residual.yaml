@@ -6,7 +6,7 @@ name: 'waymo_scube_test/VAE_64x64x64_dense_height_down2_residual'
 
 # data
 batch_size: 1
-accumulate_grad_batches: 16
+accumulate_grad_batches: 1
 voxel_size: 0.4
 use_fvdb_loader: true
 _fvdb_grid_type: 'vs04'

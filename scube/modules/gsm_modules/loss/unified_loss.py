@@ -49,6 +49,7 @@ class UnifiedLoss(nn.Module):
             self.pixel_loss = F.mse_loss
 
     def forward(self, batch, renderer_output, network_output, global_step, current_epoch, compute_metric, optimizer_idx=0):
+        import pdb; pdb.set_trace()
         loss_dict = exp.TorchLossMeter()
         metric_dict = exp.TorchLossMeter()
         latent_dict = exp.TorchLossMeter()

@@ -297,7 +297,8 @@ class LssEncoder(nn.Module):
         self.depth_estimator = None
 
         # set up lss stuffs
-        feature_map_h, feature_map_w = self.get_feature_map_shape()
+        feature_map_h, feature_map_w = self.get_feature_map_shape() 
+        # (H, W, D, 3), (u, v, depth)
         self.frustum = create_frustum(feature_map_h, feature_map_w, depth_minmax[0], depth_minmax[1], depth_bin_num, depth_mode)
 
     def get_feature_map_shape(self):
@@ -352,7 +353,7 @@ class LssEncoder(nn.Module):
                                        size=self.image_resize_shape, 
                                        mode='nearest')
         
-        image_features_, feature_unproject_mask = self.encoder(image_resized, image_mask=unproject_mask)
+        image_features_, feature_unproject_mask = self.encoder(image_resized, image_mask=unproject_mask) # (B*N, C, H', W'), (B*N, H', W')
         
         H_, W_ = image_features_.shape[-2:]
 

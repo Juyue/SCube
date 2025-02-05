@@ -70,10 +70,10 @@ def lambda_lr_wrapper(it, lr_config, batch_size):
 
 class Model(BaseModel):
     def __init__(self, hparams):
+        hparams = hparams_handler(hparams) # set up hparams automatically
         super().__init__(hparams)
 
         # get vae model
-        self.hparams = hparams_handler(hparams)
         if self.hparams.finetune_vae_decoder:
             if not hasattr(self, 'vae_is_finetuned'): 
                 # first time we need to load the vae

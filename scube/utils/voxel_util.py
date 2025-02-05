@@ -367,6 +367,8 @@ def offscreen_mesh_render_for_vae_decoded_list(vae_decoded_list, backend='filame
     for i, vae_decoded in enumerate(vae_decoded_list):
         res_feature_set, out_vdb_tensor = vae_decoded
         grid = out_vdb_tensor.grid
+        if grid.ijk.jdata.shape[0] == 0:
+            continue
         semantic_prob = res_feature_set.semantic_features[-1].jdata # [n_voxel, 23]
         semantics = semantic_prob.argmax(dim=-1) # [n_voxel, ]
         semantics = np.array(semantics.cpu().numpy()).astype(np.uint8)

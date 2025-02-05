@@ -28,14 +28,14 @@ from tqdm import tqdm
 from datagen.scube_data_utils import object_info_to_cuboid, object_info_to_object2world, get_points_in_cuboid, object_info_to_canonical_cuboid, \
     encode_dict_to_npz_bytes, imageencoder_imageio_png16, project_points_to_depth_image, align_depth_to_depth_batch, inference_metric3dv2, inference_mmseg
 
-SAVE_RGB_WDS = True
-SAVE_SEGMENTATION_WDS = True
-SAVE_POSE_WDS = True 
-SAVE_DYNAMIC_OBJECT_BBOX_WDS = True
-SAVE_ALL_OBJECT_BBOX_WDS = True 
+SAVE_RGB_WDS = False
+SAVE_SEGMENTATION_WDS = False
+SAVE_POSE_WDS = False 
+SAVE_DYNAMIC_OBJECT_BBOX_WDS = False
+SAVE_ALL_OBJECT_BBOX_WDS = False 
 
-SAVE_DEPTH_WDS = False 
-RECTIFY_DEPTH_AFFINE = False 
+SAVE_DEPTH_WDS = True 
+RECTIFY_DEPTH_AFFINE = True 
 
 def process_depth(filename_and_depth):
     filename, depth = filename_and_depth
@@ -396,6 +396,11 @@ def generate_shards(clip_id,
                 # write down to debug.txt
                 with open('debug.txt', 'a') as f:
                     f.write(f"{current_time} Error in writing depth to tar file for {clip_id} {camera}: {e}\n")
+                
+
+            # after writing, delete the the depth and clean up cuda 
+            del infered_depth, rectified_depth, lidar_depth, lidar_depth_mask, video_tensor
+            torch.cuda.empty_cache()
 
 
 @click.command()
